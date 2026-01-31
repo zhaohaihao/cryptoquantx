@@ -641,6 +641,21 @@ const CandlestickChart: React.FC = () => {
     }
   };
 
+  // 副图表交互禁用（防止与主图拖动不同步）
+  const subChartInteractionOptions = {
+    handleScroll: {
+      mouseWheel: false,
+      pressedMouseMove: false,
+      horzTouchDrag: false,
+      vertTouchDrag: false,
+    },
+    handleScale: {
+      axisPressedMouseMove: false,
+      mouseWheel: false,
+      pinch: false,
+    },
+  };
+
   // 创建所有图表
   const createCharts = () => {
     if (!chartContainerRef.current) return;
@@ -693,6 +708,21 @@ const CandlestickChart: React.FC = () => {
             fixRightEdge: false, // 允许滚动到最右边
           },
         };
+
+      // 副图表交互禁用（防止与主图拖动不同步）
+      const subChartInteractionOptions = {
+        handleScroll: {
+          mouseWheel: false,
+          pressedMouseMove: false,
+          horzTouchDrag: false,
+          vertTouchDrag: false,
+        },
+        handleScale: {
+          axisPressedMouseMove: false,
+          mouseWheel: false,
+          pinch: false,
+        },
+      };
 
       // 只有当主图表不存在时才创建主图表
       if (!chart.current) {
@@ -1860,7 +1890,7 @@ const CandlestickChart: React.FC = () => {
               }
               
               // 强制副图显示到最新的数据点
-              macdChart.current.timeScale().fitContent();
+              syncTimeScales();
               
               // 再次设置可见范围，确保与主图完全一致
               setTimeout(() => {
@@ -1893,7 +1923,7 @@ const CandlestickChart: React.FC = () => {
         // 适应视图
         if (macdChart.current && macdChart.current.timeScale()) {
           try {
-            macdChart.current.timeScale().fitContent();
+            syncTimeScales();
           } catch (error) {
             // 忽略错误，避免控制台报错
           }
@@ -2043,7 +2073,7 @@ const CandlestickChart: React.FC = () => {
               }
               
               // 强制副图显示到最新的数据点
-              rsiChart.current.timeScale().fitContent();
+              syncTimeScales();
               
               // 再次设置可见范围，确保与主图完全一致
               setTimeout(() => {
@@ -2061,13 +2091,11 @@ const CandlestickChart: React.FC = () => {
         }, 50);
         rsiSeries.current.push(lowerLine);
 
-        // 适应视图
-        if (rsiChart.current && rsiChart.current.timeScale()) {
-          try {
-            rsiChart.current.timeScale().fitContent();
-          } catch (error) {
-            // 忽略错误，避免控制台报错
-          }
+        // 保持与主图时间轴同步
+        try {
+          syncTimeScales();
+        } catch (error) {
+          // 忽略错误，避免控制台报错
         }
       } catch (error) {
         console.error('设置RSI数据错误:', error);
@@ -2221,13 +2249,11 @@ const CandlestickChart: React.FC = () => {
         rsiSeries.current.push(middleLine);
         rsiSeries.current.push(lowerLine);
 
-        // 适应视图
-        if (rsiChart.current && rsiChart.current.timeScale()) {
-          try {
-            rsiChart.current.timeScale().fitContent();
-          } catch (error) {
-            // 忽略错误，避免控制台报错
-          }
+        // 保持与主图时间轴同步
+        try {
+          syncTimeScales();
+        } catch (error) {
+          // 忽略错误，避免控制台报错
         }
       } catch (error) {
         console.error('设置StockRSI数据错误:', error);
@@ -2373,7 +2399,7 @@ const CandlestickChart: React.FC = () => {
               }
               
               // 强制副图显示到最新的数据点
-              kdjChart.current.timeScale().fitContent();
+              syncTimeScales();
               
               // 再次设置可见范围，确保与主图完全一致
               setTimeout(() => {
@@ -2393,7 +2419,7 @@ const CandlestickChart: React.FC = () => {
         // 适应视图
         if (kdjChart.current && kdjChart.current.timeScale()) {
           try {
-            kdjChart.current.timeScale().fitContent();
+            syncTimeScales();
           } catch (error) {
             // 忽略错误，避免控制台报错
           }
@@ -2500,6 +2526,7 @@ const CandlestickChart: React.FC = () => {
                   if (!macdChart.current && macdChartRef.current) {
                     macdChart.current = createChart(macdChartRef.current, {
                       ...commonOptions,
+                      ...subChartInteractionOptions,
                       height: 150,
                       // 保持与主图完全相同的时间轴设置，只隐藏显示
                       timeScale: {
@@ -2515,6 +2542,7 @@ const CandlestickChart: React.FC = () => {
                   if (!rsiChart.current && rsiChartRef.current) {
                     rsiChart.current = createChart(rsiChartRef.current, {
                       ...commonOptions,
+                      ...subChartInteractionOptions,
                       height: 150,
                       // 保持与主图完全相同的时间轴设置，只隐藏显示
                       timeScale: {
@@ -2529,6 +2557,7 @@ const CandlestickChart: React.FC = () => {
                   if (!kdjChart.current && kdjChartRef.current) {
                     kdjChart.current = createChart(kdjChartRef.current, {
                       ...commonOptions,
+                      ...subChartInteractionOptions,
                       height: 150,
                       // 保持与主图完全相同的时间轴设置，只隐藏显示
                       timeScale: {
