@@ -15,6 +15,7 @@ import RealTimeStrategyDetailPage from './pages/RealTimeStrategyDetailPage';
 import IndicatorDistributionPage from './pages/IndicatorDistributionPage';
 import AccountInfoPage from './pages/AccountInfoPage';
 import FundCenterPage from './pages/FundCenterPage';
+import TelegramNewsPage from './pages/TelegramNewsPage';
 import DataLoader from './components/DataLoader';
 import GlobalNavbar from './components/GlobalNavbar';
 import {clearBacktestResults} from './store/actions';
@@ -152,6 +153,7 @@ function App() {
                         <Route path="/indicator-distribution" element={<IndicatorDistributionPage/>}/>
                         <Route path="/account-info" element={<AccountInfoPage/>}/>
                         <Route path="/fund-center" element={<FundCenterPage/>}/>
+                        <Route path="/telegram-news" element={<TelegramNewsPage/>}/>
                         <Route path="/" element={<HomePage/>}/>
                     </Routes>
                 </div>

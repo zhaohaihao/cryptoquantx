@@ -111,6 +111,9 @@ const GlobalNavbar: React.FC = () => {
         <Link to="/fund-center" className="nav-link backtest-nav-link fund-center-link">
           资金中心
         </Link>
+        <Link to="/telegram-news" className="nav-link backtest-nav-link telegram-news-link">
+          电报资讯
+        </Link>
         <Link to="/indicator-distribution" className="nav-link backtest-nav-link indicator-distribution-link">
           指标分布
         </Link>
