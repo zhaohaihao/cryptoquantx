@@ -81,23 +81,24 @@ const RealTimeStrategyPage: React.FC = () => {
 
   // 自适应页大小计算
   const { pageSize: adaptivePageSize } = useAdaptivePagination({
-    rowHeight: 60, 
+    rowHeight: 52,
     minPageSize: 5,
     navbarHeight: 60,
-    basePadding: 48, 
+    basePadding: 0, // 设为 0，因为我们要精确计算
     getOtherElementsHeight: () => {
-      const headerRow = document.querySelector('.header-row');
-      const pagination = document.querySelector('.pagination-container');
-      const tableHeader = document.querySelector('.strategies-table thead');
+      const statsHeader = document.querySelector('.statistics-header-row') as HTMLElement | null;
+      const tableHeader = document.querySelector('.strategies-table thead') as HTMLElement | null;
+      const pagination = document.querySelector('.pagination-container') as HTMLElement | null;
       
-      const headerHeight = headerRow ? headerRow.clientHeight : 150;
-      const paginationHeight = pagination ? pagination.clientHeight : 60;
-      const tableHeaderHeight = tableHeader ? tableHeader.clientHeight : 50;
+      const statsHeight = statsHeader?.offsetHeight || 160;
+      const tableHeaderHeight = tableHeader?.offsetHeight || 45;
+      const paginationHeight = pagination?.offsetHeight || 60;
       
-      const margins = 20;
-      return headerHeight + paginationHeight + tableHeaderHeight + margins;
+      // 页面内边距 (20px top) + 统计栏和表格之间的 gap (24px)
+      const extraHeight = 44; 
+      return statsHeight + tableHeaderHeight + paginationHeight + extraHeight;
     },
-    dependencies: [strategies.length, initialLoading]
+    dependencies: [strategies.length, initialLoading, !!statistics]
   });
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 .real-time-strategy-page {
-  padding: 20px 20px 0px 20px;
+  padding: 20px 20px 0 20px;
   background-color: #1e222d;
   height: 100vh;
   color: #d9d9d9;
@@ -7,6 +7,7 @@
   flex-direction: column;
   overflow: hidden;
   box-sizing: border-box;
+  position: relative; /* 为绝对定位提供参考 */
 }
 
 .page-header {
@@ -108,23 +109,32 @@
   background-color: #252936;
   border-radius: 8px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  margin-bottom: 0; /* 移除底部外边距 */
 }
 
 .strategies-table-container {
   overflow-x: auto;
-  overflow-y: hidden; /* 隐藏垂直滚动条 */
-  flex: 1; /* 占据剩余空间 */
+  overflow-y: hidden;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .strategies-table {
   width: 100%;
   border-collapse: collapse;
   background-color: #252936;
+  flex: 1; /* 让表格在容器内尽量撑开 */
 }
 
 .strategies-table th,
 .strategies-table td {
-  padding: 12px 15px;
+  padding: 8px 12px;
   text-align: left;
   border-bottom: 1px solid #2e3241;
 }
@@ -133,7 +143,7 @@
   background-color: #2e3241;
   color: #d9d9d9;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   position: sticky;
   top: 0;
   z-index: 1;
@@ -141,7 +151,7 @@
 
 .strategies-table td {
   color: #d9d9d9;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .strategies-table tr:hover {
@@ -244,12 +254,21 @@
   color: white;
 }
 
+/* 统一样式：红涨绿跌 */
 .positive {
-  color: #ff5555 !important; /* 红涨 */
+  color: #ff5252 !important;
 }
 
 .negative {
-  color: #32a852 !important; /* 绿跌 */
+  color: #4caf50 !important;
+}
+
+.stat-value.positive {
+  color: #ff5252 !important;
+}
+
+.stat-value.negative {
+  color: #4caf50 !important;
 }
 
 /* 响应式设计 */
@@ -468,21 +487,25 @@
 
 /* Pagination Styles - Aligned with BacktestSummaryPage */
 .pagination-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 15px 0 0 0;
-  background-color: transparent;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  flex-shrink: 0;
-  width: 100%;
+  background-color: #1e222d;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1000;
+  padding: 0 20px;
   box-sizing: border-box;
 }
 
 .pagination-buttons {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .pagination-button {
@@ -506,19 +529,22 @@
 }
 
 .pagination-button:hover:not(:disabled) {
-  background-color: rgb(30, 80, 220);
+  background-color: #1e4bd8;
+  transform: translateY(-1px);
 }
 
 .pagination-button:disabled {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.3);
+  opacity: 0.5;
   cursor: not-allowed;
+  background-color: #293042;
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .pagination-info {
-  color: rgba(255, 255, 255, 0.5);
+  color: #8d8d8d;
   font-size: 14px;
-  margin: 0 15px;
+  font-weight: 500;
+  margin: 0 16px;
 }
 
 /* 刷新按钮 */
@@ -626,19 +652,21 @@
 }
 
 .negative {
-  color: #00c853 !important;
+  color: #4caf50 !important;
 }
 
 /* 策略列表容器 */
 .strategies-container {
   background-color: #1e222d;
   border-radius: 8px;
-  padding: 20px 20px 0 20px;
+  padding: 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
+  margin-bottom: 60px; /* 为固定的分页留出空间 */
 }
 
 /* 可排序表头样式 */
@@ -712,11 +740,11 @@
 
 /* 正负值颜色 - 红涨绿跌 */
 .stat-value.positive {
-  color: #ff5252;
+  color: #ff5252 !important;
 }
 
 .stat-value.negative {
-  color: #00c853;
+  color: #4caf50 !important;
 }
 
 /* 响应式布局调整 */

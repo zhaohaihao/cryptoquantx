@@ -1,5 +1,5 @@
 .indicator-distribution-page {
-  padding: 20px 20px 0px 20px;
+  padding: 20px 20px 20px 20px;
   max-width: 100%;
   background-color: #171b26;
   color: #e6e6e6;
@@ -35,12 +35,12 @@
 
 /* 筛选区域 */
 .filters {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
   align-items: center;
-  padding: 15px;
+  padding: 10px 15px;
   background-color: #1a1a2e;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -158,7 +158,7 @@
 /* 表格样式 */
 .table-container {
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: auto; /* 允许表格内部垂直滚动 */
   margin-bottom: 0;
   background-color: #1a1a2e;
   border-radius: 4px;
@@ -296,42 +296,111 @@
   color: #a9a9b3;
 }
 
-/* 类型说明 */
+/* 顶部导航和操作栏 */
 .type-legend {
-  margin-top: 30px;
-  padding: 15px;
+  margin-bottom: 10px;
+  padding: 6px 15px;
   background-color: #1a1a2e;
   border-radius: 4px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
 }
 
-.type-legend h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 16px;
-  color: #e6e6e6;
+.legend-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
-.type-legend ul {
-  list-style-type: none;
+.type-legend h3.legend-title {
+  margin: 0;
+  font-size: 13px;
+  color: #64b5f6;
+  white-space: nowrap;
+}
+
+.type-legend ul.legend-list {
+  list-style: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .type-legend li {
-  margin-bottom: 8px;
   display: flex;
   align-items: center;
+  font-size: 12px;
+  color: #a9a9b3;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.search-box input {
+  padding: 4px 10px;
+  background-color: #16213e;
+  border: 1px solid #2a2a3a;
+  border-radius: 4px;
+  color: #e6e6e6;
+  font-size: 12px;
+  width: 120px;
+}
+
+.header-actions .filter-btn,
+.header-actions .refresh-btn,
+.header-actions .update-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  height: 26px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.header-actions .filter-btn {
+  background-color: #16213e;
+  border: 1px solid #2a2a3a;
+  color: #e6e6e6;
+}
+
+.header-actions .filter-btn.active {
+  background-color: #2962ff;
+  border-color: #2962ff;
+  color: white;
+}
+
+.header-actions .refresh-btn {
+  background-color: #16213e;
+  border: 1px solid #2a2a3a;
+  color: #e6e6e6;
+}
+
+.header-actions .update-btn {
+  background-color: #2196F3;
+  border: none;
+  color: white;
 }
 
 .legend-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  margin-right: 10px;
+  margin-right: 4px;
   font-weight: bold;
+  font-size: 10px;
 }
 
 .positive .legend-icon {
@@ -376,54 +445,59 @@
   }
 }
 
-/* Pagination Styles - Aligned with BacktestSummaryPage */
 .pagination-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 15px 0 0 0;
-  background-color: #171b26;
-  border-top: 1px solid #2a2a3a;
+  padding: 12px 0;
+  background-color: #1a1a2e; /* 匹配筛选栏背景色，使视觉更统一 */
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   margin-top: auto;
   flex-shrink: 0;
   width: 100%;
   box-sizing: border-box;
+  z-index: 10;
 }
 
 .pagination-buttons {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .pagination-button {
   padding: 6px 16px;
-  background-color: #2a2a3a;
-  color: #e6e6e6;
-  border: 1px solid #3a3a4a;
+  background-color: #2962ff; /* 统一使用主题蓝色 */
+  color: white;
+  border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s ease;
-  height: auto;
-  min-width: auto;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
 }
 
 .pagination-button:hover:not(:disabled) {
-  background-color: #3a3a4a;
-  border-color: #4a4a5a;
+  background-color: #1e4bd8;
+  transform: translateY(-1px);
 }
 
 .pagination-button:disabled {
-  opacity: 0.5;
+  background-color: #3a3a4a;
+  color: #8d8d8d;
   cursor: not-allowed;
-  background-color: #1f1f2f;
+  opacity: 0.6;
 }
 
 .pagination-info {
-  color: #8d8d8d;
+  color: #e6e6e6;
   font-size: 14px;
   margin: 0 15px;
+  font-weight: 500;
 }
 
 /* 为内容区域添加底部边距，防止被固定的分页控件遮挡 */

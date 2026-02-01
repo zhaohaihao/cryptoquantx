@@ -319,7 +319,7 @@ const BacktestSummaryPage: React.FC = () => {
     if (value === null || value === undefined || value === 0) {
       return '';
     }
-    return value > 0 ? 'positive-value' : 'negative-value';
+    return value > 0 ? 'positive' : 'negative';
   };
 
   // 处理排序
@@ -753,7 +753,13 @@ const BacktestSummaryPage: React.FC = () => {
 
   // 页面处理函数
   const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
+    // 滚动到表格顶部
+    const tableContainer = document.querySelector('.summary-table-container');
+    if (tableContainer) {
+      tableContainer.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // 计算总页数

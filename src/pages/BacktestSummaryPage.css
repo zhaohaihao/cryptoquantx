@@ -235,22 +235,11 @@
 }
 
 .positive {
-  color: #ff6b6b;
+  color: #ff5252 !important; /* 红涨 */
 }
 
 .negative {
-  color: #4caf50;
-}
-
-/* 红涨绿跌颜色样式 */
-.positive-value {
-  color: #ff5722 !important; /* 红色表示上涨 */
-  font-weight: 500;
-}
-
-.negative-value {
-  color: #4caf50 !important; /* 绿色表示下跌 */
-  font-weight: 500;
+  color: #4caf50 !important; /* 绿跌 */
 }
 
 .detail-button {
@@ -303,39 +292,48 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 15px 0 0 0;
+  padding: 16px 0;
   background-color: #171b26;
   border-top: 1px solid #2a2a3a;
-  margin-top: auto;
   flex-shrink: 0;
 }
 
 .pagination-button {
-  background-color: #293042;
-  color: #e6e6e6;
-  border: 1px solid #3a3f52;
-  padding: 6px 12px;
-  margin: 0 5px;
+  height: 36px;
+  box-sizing: border-box;
+  margin: 0 4px;
+  background-color: rgb(41, 98, 255);
+  color: white;
+  border: none;
   border-radius: 4px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  min-width: 60px;
 }
 
 .pagination-button:hover:not(:disabled) {
-  background-color: #3a4258;
-  border-color: #4a5169;
+  background-color: #1e4bd8;
+  transform: translateY(-1px);
 }
 
 .pagination-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  background-color: #293042;
 }
 
 .pagination-info {
-  margin: 0 15px;
+  margin: 0 16px;
   color: #8d8d8d;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 

@@ -347,11 +347,11 @@
 }
 
 .strategy-cell.max-return.positive {
-  color: #ff5252;  /* 红色 - 正收益 */
+  color: #ff5252 !important;  /* 红涨 */
 }
 
 .strategy-cell.max-return.negative {
-  color: #4caf50;  /* 绿色 - 负收益 */
+  color: #4caf50 !important;  /* 绿跌 */
 }
 
 .sort-indicator {
@@ -413,7 +413,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 15px 0 0 0;
+  padding: 16px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   flex-shrink: 0;
 }
@@ -421,7 +421,7 @@
 .pagination-buttons {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .pagination-button {
@@ -446,18 +446,21 @@
 
 .pagination-button:hover:not(:disabled) {
   background-color: #1e4bd8;
+  transform: translateY(-1px);
 }
 
 .pagination-button:disabled {
-  background-color: rgb(41, 98, 255);
+  opacity: 0.5;
   cursor: not-allowed;
-  opacity: 0.7;
+  background-color: #293042;
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .pagination-info {
-  margin: 0 10px;
+  margin: 0 16px;
   font-size: 14px;
-  color: #e6e6e6;
+  font-weight: 500;
+  color: #8d8d8d;
   white-space: nowrap;
 }
 

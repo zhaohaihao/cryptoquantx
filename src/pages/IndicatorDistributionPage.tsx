@@ -44,21 +44,22 @@ const IndicatorDistributionPage: React.FC = () => {
   
   // 自适应页大小计算
   const { pageSize: adaptivePageSize } = useAdaptivePagination({
-    rowHeight: 50,
+    rowHeight: 52, // 对应 .indicator-distribution-table td 的 height: 50px + border
     minPageSize: 5,
-    navbarHeight: 0,
-    basePadding: 40,
+    navbarHeight: 60,
+    basePadding: 0, 
     getOtherElementsHeight: () => {
-      const filters = document.querySelector('.filters');
-      const pagination = document.querySelector('.pagination-container');
-      const tableHeader = document.querySelector('.indicator-distribution-table thead');
+      const legend = document.querySelector('.type-legend') as HTMLElement | null;
+      const pagination = document.querySelector('.pagination-container') as HTMLElement | null;
+      const tableHeader = document.querySelector('.indicator-distribution-table thead') as HTMLElement | null;
       
-      const filtersHeight = filters ? filters.clientHeight : 50;
-      const paginationHeight = pagination ? pagination.clientHeight : 60;
-      const tableHeaderHeight = tableHeader ? tableHeader.clientHeight : 50;
+      const legendHeight = legend?.offsetHeight || 40;
+      const paginationHeight = pagination?.offsetHeight || 60;
+      const tableHeaderHeight = tableHeader?.offsetHeight || 50;
       
-      const margins = 40;
-      return filtersHeight + paginationHeight + tableHeaderHeight + margins;
+      // 页面内边距 (20px top + 20px bottom) + 顶部栏与表格之间的 margin-bottom (10px)
+      const extraHeight = 50; 
+      return legendHeight + paginationHeight + tableHeaderHeight + extraHeight;
     },
     dependencies: [data?.indicatorDetails?.length, loading]
   });
@@ -229,7 +230,14 @@ const IndicatorDistributionPage: React.FC = () => {
 
   // 处理页面变更
   const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
+    if (newPage >= 1 && newPage <= getTotalPages()) {
+      setCurrentPage(newPage);
+      // 滚动到顶部
+      const contentElement = document.querySelector('.content');
+      if (contentElement) {
+        contentElement.scrollTop = 0;
+      }
+    }
   };
 
   // 渲染表头
@@ -305,78 +313,70 @@ const IndicatorDistributionPage: React.FC = () => {
     );
   };
 
-  // 渲染筛选器
-  const renderFilters = () => {
-    const buttonHeight = '36px';
-
+  // 渲染指标说明和操作栏
+  const renderHeader = () => {
     return (
-      <div className="filters" style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', overflowX: 'auto' }}>
-        {/* 添加账户余额显示 */}
-        {/* <div className="account-balance" style={{ display: 'flex', alignItems: 'center', marginRight: 'auto', padding: '0 10px' }}>
-          <span style={{ fontWeight: 'bold', marginRight: '8px', color: '#8d8d8d', fontSize: '14px' }}>可用余额:</span>
-          {loadingBalance ? (
-            <span style={{ color: '#d9d9d9', fontSize: '14px' }}>加载中...</span>
-          ) : (
-            <span style={{ color: '#4caf50', fontWeight: 'bold', fontSize: '16px' }}>
-              {accountBalance !== null ? `${accountBalance.toFixed(2)} USDT` : '未知'}
-            </span>
-          )}
+      <div className="type-legend">
+        <div className="legend-content">
+          <h3 className="legend-title">指标类型说明</h3>
+          <ul className="legend-list">
+            <li className="positive">
+              <span className="legend-icon">↑</span>
+              <span className="legend-text">正向指标</span>
+            </li>
+            <li className="negative">
+              <span className="legend-icon">↓</span>
+              <span className="legend-text">负向指标</span>
+            </li>
+            <li className="neutral">
+              <span className="legend-icon">•</span>
+              <span className="legend-text">中性指标</span>
+            </li>
+          </ul>
+        </div>
+        
+        <div className="header-actions">
+          <div className="search-box">
+            <input
+              type="text"
+              placeholder="搜索指标..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
           <button
-            onClick={loadAccountBalance}
-            style={{ 
-              marginLeft: '8px', 
-              background: 'none', 
-              border: 'none', 
-              cursor: 'pointer', 
-              color: '#1890ff',
-              fontSize: '12px' 
-            }}
-            title="刷新余额"
+            className={`filter-btn ${filterType === 'all' ? 'active' : ''}`}
+            onClick={() => setFilterType('all')}
           >
-            ↻
+            全部
           </button>
-        </div> */}
-        <div className="action-buttons" style={{ display: 'flex', gap: '5px', marginLeft: 'auto', flexShrink: 0 }}>
-          {/* <button
+          <button
+            className={`filter-btn positive ${filterType === 'POSITIVE' ? 'active' : ''}`}
+            onClick={() => setFilterType('POSITIVE')}
+          >
+            正向
+          </button>
+          <button
+            className={`filter-btn negative ${filterType === 'NEGATIVE' ? 'active' : ''}`}
+            onClick={() => setFilterType('NEGATIVE')}
+          >
+            负向
+          </button>
+          <button
             className="refresh-btn"
             onClick={loadIndicatorDistributions}
             disabled={loading}
-            style={{ padding: '0 10px', fontSize: '14px', whiteSpace: 'nowrap', height: buttonHeight }}
           >
-            {loading ? '加载中...' : '刷新数据'}
-          </button> */}
+            {loading ? '...' : '刷新'}
+          </button>
           <button
             className="update-btn"
             onClick={handleUpdateDistributions}
-            disabled={updating || loading}
-            style={{ padding: '0 10px', fontSize: '14px', whiteSpace: 'nowrap', height: buttonHeight }}
+            disabled={updating}
           >
-            {updating ? '更新中...' : '更新分布'}
+            {updating ? '...' : '更新分布'}
           </button>
         </div>
-      </div>
-    );
-  };
-
-  // 渲染类型说明
-  const renderTypeLegend = () => {
-    return (
-      <div className="type-legend">
-        <h3>指标类型说明</h3>
-        <ul>
-          <li className="positive">
-            <span className="legend-icon">↑</span>
-            <span className="legend-text">正向指标：数值越高越好，例如：年化收益率、夏普比率、获利因子</span>
-          </li>
-          <li className="negative">
-            <span className="legend-icon">↓</span>
-            <span className="legend-text">负向指标：数值越低越好，例如：最大回撤、交易成本、波动率</span>
-          </li>
-          <li className="neutral">
-            <span className="legend-icon">•</span>
-            <span className="legend-text">中性指标：无明确好坏倾向，例如：交易次数</span>
-          </li>
-        </ul>
       </div>
     );
   };
@@ -386,7 +386,7 @@ const IndicatorDistributionPage: React.FC = () => {
     <div className="indicator-distribution-page">
 
 
-      {renderFilters()}
+      {renderHeader()}
 
       {error && <div className="error-message">{error}</div>}
 
@@ -437,8 +437,6 @@ const IndicatorDistributionPage: React.FC = () => {
               </div>
             </div>
           )}
-
-          {/*{renderTypeLegend()}*/}
         </div>
       ) : (
         <div className="no-data-message">
