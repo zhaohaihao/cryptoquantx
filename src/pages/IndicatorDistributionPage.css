@@ -1,9 +1,9 @@
 .indicator-distribution-page {
-  padding: 20px 20px 20px 20px;
+  padding: 15px 20px 0 20px; /* 底部不再需要 padding，因为分页栏固定在底部 */
   max-width: 100%;
   background-color: #171b26;
   color: #e6e6e6;
-  height: 100vh;
+  height: calc(100vh - 64px); /* 减去顶部导航栏高度 */
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -449,8 +449,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 12px 0;
-  background-color: #1a1a2e; /* 匹配筛选栏背景色，使视觉更统一 */
+  padding: 15px 0 25px 0; /* 增加底部内边距，确保按钮不会紧贴屏幕边缘 */
+  background-color: #1a1a2e; 
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   margin-top: auto;
   flex-shrink: 0;
@@ -502,9 +502,10 @@
 
 /* 为内容区域添加底部边距，防止被固定的分页控件遮挡 */
 .content {
-  padding-bottom: 0;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1; /* 取代 height: 100%，确保只占用剩余空间 */
+  min-height: 0; /* 允许 flex 项目缩小 */
   overflow: hidden;
+  padding-bottom: 0;
 } 

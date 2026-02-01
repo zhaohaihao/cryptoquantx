@@ -40,33 +40,41 @@ const IndicatorDistributionPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   // 添加分页状态
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(15);
+  const [pageSize, setPageSize] = useState(0); 
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
   
   // 自适应页大小计算
   const { pageSize: adaptivePageSize } = useAdaptivePagination({
-    rowHeight: 52, // 对应 .indicator-distribution-table td 的 height: 50px + border
+    rowHeight: 52, 
     minPageSize: 5,
-    navbarHeight: 60,
-    basePadding: 0, 
+    navbarHeight: 64, 
+    basePadding: 20, 
     getOtherElementsHeight: () => {
       const legend = document.querySelector('.type-legend') as HTMLElement | null;
       const pagination = document.querySelector('.pagination-container') as HTMLElement | null;
       const tableHeader = document.querySelector('.indicator-distribution-table thead') as HTMLElement | null;
       
-      const legendHeight = legend?.offsetHeight || 40;
-      const paginationHeight = pagination?.offsetHeight || 60;
+      const legendHeight = legend?.offsetHeight || 44; 
+      const paginationHeight = pagination?.offsetHeight || 72; 
       const tableHeaderHeight = tableHeader?.offsetHeight || 50;
       
-      // 页面内边距 (20px top + 20px bottom) + 顶部栏与表格之间的 margin-bottom (10px)
-      const extraHeight = 50; 
+      const extraHeight = 20; 
       return legendHeight + paginationHeight + tableHeaderHeight + extraHeight;
     },
-    dependencies: [data?.indicatorDetails?.length, loading]
+    dependencies: [] // 彻底移除 loading 依赖，防止加载状态切换导致重算
   });
 
+  // 只有当 adaptivePageSize 稳定后（且不是默认的 minPageSize）才设置真正的 pageSize
   useEffect(() => {
-    if (adaptivePageSize > 0) {
+    if (adaptivePageSize > 5) { // 假设正常屏幕下计算出来的 size 肯定大于 5 (minPageSize)
       setPageSize(adaptivePageSize);
+    } else {
+      // 如果计算出来刚好是 5 或者还在初始化，等 200ms 再确认一次
+      const timer = setTimeout(() => {
+        setPageSize(adaptivePageSize);
+      }, 200);
+      return () => clearTimeout(timer);
     }
   }, [adaptivePageSize]);
 
@@ -75,13 +83,24 @@ const IndicatorDistributionPage: React.FC = () => {
   const [loadingBalance, setLoadingBalance] = useState<boolean>(false);
 
   // 加载指标分布数据
-  const loadIndicatorDistributions = async () => {
+  const loadIndicatorDistributions = async (page: number = currentPage, size: number = pageSize) => {
+    if (size <= 0) return; // 还没计算好，坚决不加载
+    
     setLoading(true);
     setError(null);
     try {
-      const result = await fetchIndicatorDistributions();
+      // 后端分页从0开始，前端从1开始
+      console.log(`正在请求分页数据: page=${page-1}, size=${size}, search=${searchTerm}, filter=${filterType}`);
+      const result = await fetchIndicatorDistributions(page - 1, size, searchTerm, filterType);
+      console.log('API 返回原始数据:', result);
+      
       if (result.success && result.data) {
         setData(result.data);
+        const pages = result.data.totalPages || 0;
+        const total = result.data.totalCount || 0;
+        console.log(`解析分页信息: totalPages=${pages}, totalElements=${total}`);
+        setTotalPages(pages);
+        setTotalElements(total);
       } else {
         setError(result.message || '获取指标分布详情失败');
       }
@@ -100,7 +119,7 @@ const IndicatorDistributionPage: React.FC = () => {
       const result = await updateIndicatorDistributions();
       if (result.success) {
         // 重新加载数据
-        loadIndicatorDistributions();
+        loadIndicatorDistributions(1, pageSize);
         setError(null);
       } else {
         setError(result.message || '更新指标分布失败');
@@ -112,6 +131,27 @@ const IndicatorDistributionPage: React.FC = () => {
       setUpdating(false);
     }
   };
+
+  // 监听筛选和分页变化
+  useEffect(() => {
+    if (pageSize > 0) {
+      loadIndicatorDistributions(currentPage, pageSize);
+    }
+  }, [currentPage, pageSize, filterType]);
+
+  // 处理搜索 (带防抖或手动触发)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (pageSize > 0) {
+        if (currentPage !== 1) {
+          setCurrentPage(1);
+        } else {
+          loadIndicatorDistributions(1, pageSize);
+        }
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // 加载账户余额
   const loadAccountBalance = async () => {
@@ -139,7 +179,6 @@ const IndicatorDistributionPage: React.FC = () => {
 
   // 初始加载
   useEffect(() => {
-    loadIndicatorDistributions();
     loadAccountBalance(); // 加载账户余额
   }, []);
 
@@ -147,9 +186,9 @@ const IndicatorDistributionPage: React.FC = () => {
   const formatValue = (value: number, indicator: IndicatorDetail): string => {
     // 特殊处理非百分比指标
     if (["numberOfTrades", "maxDrawdownDuration"].includes(indicator.name)) {
-      return value.toFixed(0);
+      return value ? value.toFixed(0) : '0';
     } else {
-      return `${(value * 100).toFixed(2)}%`;
+      return value ? `${(value * 100).toFixed(2)}%` : '0.00%';
     }
   };
 
@@ -183,54 +222,10 @@ const IndicatorDistributionPage: React.FC = () => {
     }
   };
 
-  // 过滤指标
-  const getFilteredIndicators = () => {
-    if (!data?.indicatorDetails) return [];
-
-    return data.indicatorDetails.filter(indicator => {
-      // 类型筛选
-      if (filterType !== 'all' && indicator.type !== filterType) {
-        return false;
-      }
-
-      // 搜索筛选
-      if (searchTerm && !indicator.displayName.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !indicator.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-        return false;
-      }
-
-      return true;
-    }).sort((a, b) => {
-      // 排序优先级：类型 > 名称
-      if (a.type !== b.type) {
-        const typeOrder: Record<string, number> = {
-          "POSITIVE": 1,
-          "NEGATIVE": 2,
-          "NEUTRAL": 3
-        };
-        return typeOrder[a.type] - typeOrder[b.type];
-      }
-      return a.displayName.localeCompare(b.displayName);
-    });
-  };
-
-  // 计算总页数
-  const getTotalPages = () => {
-    const filteredIndicators = getFilteredIndicators();
-    return Math.ceil(filteredIndicators.length / pageSize);
-  };
-
-  // 获取当前页的指标 
-  const getCurrentPageIndicators = () => {
-    const filteredIndicators = getFilteredIndicators();
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    return filteredIndicators.slice(startIndex, endIndex);
-  };
-
   // 处理页面变更
   const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= getTotalPages()) {
+    console.log(`切换页面: from ${currentPage} to ${newPage}, totalPages: ${totalPages}`);
+    if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
       // 滚动到顶部
       const contentElement = document.querySelector('.content');
@@ -263,13 +258,13 @@ const IndicatorDistributionPage: React.FC = () => {
 
   // 渲染表格内容
   const renderTableBody = () => {
-    const currentPageIndicators = getCurrentPageIndicators();
+    const indicators = data?.indicatorDetails || [];
 
-    if (currentPageIndicators.length === 0) {
+    if (indicators.length === 0) {
       return (
         <tbody>
           <tr>
-            <td colSpan={14} className="no-data">没有找到符合条件的指标数据</td>
+            <td colSpan={11} className="no-data">没有找到符合条件的指标数据</td>
           </tr>
         </tbody>
       );
@@ -277,7 +272,7 @@ const IndicatorDistributionPage: React.FC = () => {
 
     return (
       <tbody>
-        {currentPageIndicators.map((indicator) => (
+        {indicators.map((indicator) => (
           <tr key={indicator.name} className={getTypeClass(indicator.type)}>
             <td className="indicator-name">
               <span className="display-name">{indicator.displayName}</span>
@@ -346,25 +341,34 @@ const IndicatorDistributionPage: React.FC = () => {
           </div>
           <button
             className={`filter-btn ${filterType === 'all' ? 'active' : ''}`}
-            onClick={() => setFilterType('all')}
+            onClick={() => {
+              setFilterType('all');
+              setCurrentPage(1);
+            }}
           >
             全部
           </button>
           <button
             className={`filter-btn positive ${filterType === 'POSITIVE' ? 'active' : ''}`}
-            onClick={() => setFilterType('POSITIVE')}
+            onClick={() => {
+              setFilterType('POSITIVE');
+              setCurrentPage(1);
+            }}
           >
             正向
           </button>
           <button
             className={`filter-btn negative ${filterType === 'NEGATIVE' ? 'active' : ''}`}
-            onClick={() => setFilterType('NEGATIVE')}
+            onClick={() => {
+              setFilterType('NEGATIVE');
+              setCurrentPage(1);
+            }}
           >
             负向
           </button>
           <button
             className="refresh-btn"
-            onClick={loadIndicatorDistributions}
+            onClick={() => loadIndicatorDistributions(currentPage, pageSize)}
             disabled={loading}
           >
             {loading ? '...' : '刷新'}
@@ -399,37 +403,37 @@ const IndicatorDistributionPage: React.FC = () => {
         <div className="content">
           {renderTable()}
 
-          {/* 分页控件 */}
-          {getTotalPages() > 1 && (
+          {/* 分页控件 - 只要有数据就显示，方便查看总条数，且与电报页面保持一致的分页逻辑 */}
+          {totalElements > 0 && (
             <div className="pagination-container">
               <div className="pagination-buttons">
                 <button
                   onClick={() => handlePageChange(1)}
-                  disabled={currentPage === 1}
+                  disabled={currentPage === 1 || loading}
                   className="pagination-button"
                 >
                   首页
                 </button>
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
+                  disabled={currentPage === 1 || loading}
                   className="pagination-button"
                 >
                   上一页
                 </button>
                 <div className="pagination-info">
-                  {currentPage} / {getTotalPages()} 页 (共 {getFilteredIndicators().length} 条记录)
+                  {currentPage} / {Math.max(1, totalPages)} 页 (共 {totalElements} 条记录)
                 </div>
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === getTotalPages()}
+                  disabled={currentPage >= totalPages || loading}
                   className="pagination-button"
                 >
                   下一页
                 </button>
                 <button
-                  onClick={() => handlePageChange(getTotalPages())}
-                  disabled={currentPage === getTotalPages()}
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={currentPage >= totalPages || loading}
                   className="pagination-button"
                 >
                   末页

@@ -809,9 +809,22 @@ export const fetchStrategyMaxReturns = async (): Promise<Record<string, number>>
 };
 
 // 获取指标分布详情
-export const fetchIndicatorDistributions = async (): Promise<{ success: boolean; data?: any; message?: string }> => {
+export const fetchIndicatorDistributions = async (
+  page: number = 0,
+  size: number = 15,
+  searchTerm?: string,
+  filterType?: string
+): Promise<{ success: boolean; data?: any; message?: string }> => {
   try {
-    const url = '/api/indicator-distribution/current';
+    let url = `/api/indicator-distribution/current?page=${page}&size=${size}`;
+    
+    if (searchTerm) {
+      url += `&searchTerm=${encodeURIComponent(searchTerm)}`;
+    }
+    
+    if (filterType && filterType !== 'all') {
+      url += `&filterType=${encodeURIComponent(filterType)}`;
+    }
 
     const response = await fetch(url);
 
