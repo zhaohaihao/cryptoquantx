@@ -19,29 +19,8 @@ import DataLoader from './components/DataLoader';
 import GlobalNavbar from './components/GlobalNavbar';
 import {clearBacktestResults} from './store/actions';
 import './App.css';
-// 引入 stagewise 补丁
-import './utils/stagewise-patch.js';
-// 引入 stagewise 插件修复
-import './utils/stagewise-plugins-fix.js';
 
-// 懒加载StagewiseToolbar组件和配置
-const StagewiseToolbar = lazy(async () => {
-  const [toolbarModule, pluginModule] = await Promise.all([
-    import('@stagewise/toolbar-react'),
-    import('@stagewise-plugins/react')
-  ]);
-  
-  const ToolbarWithConfig = (props: any) => {
-    return React.createElement(toolbarModule.StagewiseToolbar, {
-      ...props,
-      config: {
-        plugins: [pluginModule.default || pluginModule]
-      }
-    });
-  };
-  
-  return { default: ToolbarWithConfig };
-});
+
 
 // 首页组件，用于包装首页内容
 const HomePage = () => {
@@ -155,9 +134,6 @@ const RouteChangeHandler = () => {
 };
 
 function App() {
-    // 仅在开发环境中显示工具栏
-    const showToolbar = process.env.NODE_ENV === 'development';
-
     return (
         <Provider store={store}>
             <Router>
@@ -181,13 +157,6 @@ function App() {
                 </div>
                 {/* 数据加载器 */}
                 <DataLoader/>
-                
-                {/* Stagewise工具栏 - 只在开发环境下显示 */}
-                {showToolbar && (
-                    <Suspense fallback={<div>Loading toolbar...</div>}>
-                        <StagewiseToolbar />
-                    </Suspense>
-                )}
             </Router>
         </Provider>
     );

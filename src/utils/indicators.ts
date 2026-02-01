@@ -241,8 +241,8 @@ export const calculateMACD = (
     // 只对有效的MACD值计算信号线
     const signalData: number[] = [];
     
-    // 前34个点（25个MACD的NaN + 9个信号线的初始周期）填充NaN
-    for (let i = 0; i < 34; i++) {
+    // 前25个点（对应MACD的无效部分）填充NaN，后续由signalEMA补充（signalEMA前8个也是NaN）
+    for (let i = 0; i < 25; i++) {
       signalData.push(NaN);
     }
     

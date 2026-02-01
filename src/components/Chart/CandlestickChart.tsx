@@ -982,7 +982,7 @@ const CandlestickChart: React.FC = () => {
         try {
           macdChart.current.timeScale().setVisibleLogicalRange(mainVisibleRange);
         } catch (error) {
-          // 忽略错误
+          console.warn('MACD sync failed:', error);
         }
       }
 
@@ -990,7 +990,7 @@ const CandlestickChart: React.FC = () => {
         try {
           rsiChart.current.timeScale().setVisibleLogicalRange(mainVisibleRange);
         } catch (error) {
-          // 忽略错误
+          console.warn('RSI sync failed:', error);
         }
       }
 
@@ -998,11 +998,11 @@ const CandlestickChart: React.FC = () => {
         try {
           kdjChart.current.timeScale().setVisibleLogicalRange(mainVisibleRange);
         } catch (error) {
-          // 忽略错误
+          console.warn('KDJ sync failed:', error);
         }
       }
     } catch (error) {
-      // 忽略错误
+      console.warn('Time scale synchronization failed:', error);
     }
   };
 
@@ -1743,7 +1743,11 @@ const CandlestickChart: React.FC = () => {
         if (skipInvalidValues) {
           continue;
         }
-        // 如果不跳过无效值，可以用null或其他值替代，但这里我们还是跳过
+        // 如果不跳过无效值，保留NaN以维持对齐
+        result.push({
+          time: time,
+          value: NaN
+        });
         continue;
       }
 
@@ -1803,9 +1807,9 @@ const CandlestickChart: React.FC = () => {
       // 创建时间序列
       const times = candlestickData.map(item => item.time as Time);
 
-      // 准备数据，过滤掉无效值
-      const macdData = prepareTimeSeriesData(macd, times);
-      const signalData = prepareTimeSeriesData(signal, times);
+      // 准备数据，过滤掉无效值，但保留NaN以维持对齐
+      const macdData = prepareTimeSeriesData(macd, times, undefined, false);
+      const signalData = prepareTimeSeriesData(signal, times, undefined, false);
 
       // 特殊处理柱状图数据
       const histogramData: {time: Time, value: number, color: string}[] = [];
@@ -1815,12 +1819,21 @@ const CandlestickChart: React.FC = () => {
         const value = histogram[i];
         const time = times[i];
 
-        if (value !== undefined && !isNaN(value) && time !== undefined) {
-          histogramData.push({
-            time: time,
-            value: value,
-            color: value >= 0 ? '#26a69a' : '#ef5350',
-          });
+        if (time !== undefined) {
+          if (value !== undefined && !isNaN(value)) {
+            histogramData.push({
+              time: time,
+              value: value,
+              color: value >= 0 ? '#26a69a' : '#ef5350',
+            });
+          } else {
+            // 保留NaN以维持对齐
+            histogramData.push({
+              time: time,
+              value: NaN,
+              color: 'transparent'
+            });
+          }
         }
       }
 
@@ -1979,8 +1992,8 @@ const CandlestickChart: React.FC = () => {
       
       console.log('RSI数据长度:', rsiData.length, '时间序列长度:', times.length);
       
-      // 准备数据，确保包含最新K线
-      const formattedData = prepareTimeSeriesData(rsiData, times);
+      // 准备数据，确保包含最新K线，保留NaN以维持对齐
+      const formattedData = prepareTimeSeriesData(rsiData, times, undefined, false);
       
       console.log('RSI格式化数据长度:', formattedData.length);
 
@@ -2146,8 +2159,8 @@ const CandlestickChart: React.FC = () => {
       // 创建时间序列
       const times = candlestickData.map(item => item.time as Time);
 
-      // 准备数据，过滤掉无效值
-      const formattedData = prepareTimeSeriesData(stockRsiData, times);
+      // 准备数据，过滤掉无效值，保留NaN以维持对齐
+      const formattedData = prepareTimeSeriesData(stockRsiData, times, undefined, false);
 
       // 如果没有有效数据，不添加指标
       if (formattedData.length === 0) {
@@ -2312,10 +2325,10 @@ const CandlestickChart: React.FC = () => {
       
       console.log('KDJ数据长度:', k.length, d.length, j.length, '时间序列长度:', times.length);
 
-      // 准备数据，确保包含最新K线
-      const kData = prepareTimeSeriesData(k, times);
-      const dData = prepareTimeSeriesData(d, times);
-      const jData = prepareTimeSeriesData(j, times);
+      // 准备数据，确保包含最新K线，保留NaN以维持对齐
+      const kData = prepareTimeSeriesData(k, times, undefined, false);
+      const dData = prepareTimeSeriesData(d, times, undefined, false);
+      const jData = prepareTimeSeriesData(j, times, undefined, false);
       
       console.log('KDJ格式化数据长度:', kData.length, dData.length, jData.length);
 

@@ -5,10 +5,7 @@
 /.history/
 
 # 环境变量文件
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+
 
 # 保留示例文件
 !.env.example
